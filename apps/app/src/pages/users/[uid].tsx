@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useInterval } from "usehooks-ts";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { getCurrentlyPlayingTrackFromToken } from "@/pages/api/refresh_token";
+import { getCurrentlyPlayingTrackFromToken } from "@/pages/api/currently_track";
 
 type Props = {
   name: string;
@@ -17,7 +17,7 @@ const User: NextPage<Props> = (props: Props) => {
   const router = useRouter();
 
   useInterval(() => {
-    fetch(`api/refresh_token/?uid=${router.query.uid as string}`).then(
+    fetch(`/api/currently_track?uid=${router.query.uid as string}`).then(
       (res) => {
         res.json().then((data) => {
           const album = data.item.album;
