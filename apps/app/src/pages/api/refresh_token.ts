@@ -1,18 +1,34 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { fetchCurrentlyPlaying } from "../../util/api/fetchCurrentlyPlaying";
+import { fetchCurrentlyPlaying } from "../../utils/api/fetchCurrentlyPlaying";
+import { CamelCasedPropertiesDeep } from "type-fest";
+import { camelizeKeys } from "@/utils/camelizeKeys";
+import prisma from "@/libs/prisma";
 
-type Data = {
-  // TODO
+type RawToken = {
+  access_token: string;
+  token_type: "Bearer";
+  scope: string;
+  expires_in: number;
 };
 
-export const getCurrentlyPlayingTrackFromToken = async (
-  refresh_token: string
-) => {
+type Token = CamelCasedPropertiesDeep<RawToken>;
+
+export const getCurrentlyPlayingTrackFromToken = async (key: string) => {
   const client_id = process.env.CLIENT_ID || "";
   const client_secret = process.env.CLIENT_SECRET || "";
 
+  const user = await prisma.user.findUnique({
+    where: { key },
+  }).catch(() => {
+    throw new Error('user not found')
+  });
+
+  if (user === null) {
+    throw new Error('user not found')
+  }
+
   const params = new URLSearchParams({
-    refresh_token: refresh_token as string,
+    refresh_token: user.refreshToken,
     grant_type: "refresh_token",
   });
 
@@ -27,16 +43,21 @@ export const getCurrentlyPlayingTrackFromToken = async (
     body: params,
   });
 
-  const token = await tokenResponse.json();
-  return await fetchCurrentlyPlaying(token.access_token);
+  const token = camelizeKeys(await tokenResponse.json()) as Token;
+  return await fetchCurrentlyPlaying(token.accessToken);
 };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse
 ) {
-  const data = await getCurrentlyPlayingTrackFromToken(
-    req.query.refresh_token as string
-  );
-  res.status(200).json(data);
+  if (req.query.uid === undefined) {
+    res.status(404);
+  }
+  try {
+    const data = await getCurrentlyPlayingTrackFromToken(req.query.uid as string);
+    res.status(200).json(data);
+  } catch (e) {
+    res.status(500).json({ error: { message: 'エラーが発生しました'}})
+  }
 }
