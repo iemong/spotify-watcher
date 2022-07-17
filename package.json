@@ -23,18 +23,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "turbo": {
-    "baseBrach": "origin/main",
-    "pipeline": {
-      "build": {
-        "dependsOn": [
-          "^build"
-        ]
-      },
-      "dev": {
-        "cache": false
-      }
-    }
-  }
+  ]
 }
