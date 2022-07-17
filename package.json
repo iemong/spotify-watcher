@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/iemong/spotify-watcher#readme",
   "devDependencies": {
+    "prettier": "^2.7.1",
     "turbo": "^1.3.1"
   },
   "workspaces": [
