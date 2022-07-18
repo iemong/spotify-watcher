@@ -13,7 +13,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const state = generateRandomString(16);
   const scope = "user-read-currently-playing user-read-email";
   const client_id = process.env.CLIENT_ID || "";
-  const redirect_uri = "http://localhost:3000/api/callback";
+  const redirect_uri = `${process.env.REDIRECT_URL}/api/callback`;
 
   const params = new URLSearchParams({
     response_type: "code",
